@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Products
+from .models import Products, Categories
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -7,7 +7,16 @@ from django.contrib.auth.forms import UserCreationForm
 from .forms import SignUpForm
 from django import forms
 
-
+    
+def category(request, cn):
+    try:
+        category = Categories.objects.get(name=cn)
+        products = Products.objects.filter(category=category)
+        return render(request, 'category.html', {'products': products, 'category': category})
+    except Categories.DoesNotExist:
+        messages.error(request, 'Desculpa, neste momento não há produtos desta categoria.')
+        return redirect('home')
+    
 def product(request,pk):
     product = Products.objects.get(id=pk)
     return render(request, 'product.html', {'product':product})
@@ -30,7 +39,7 @@ def login_user(request):
             messages.success(request, ('Bem vindo, você entrou na sua conta!.'))
             return redirect('home')
         else: 
-            messages.success(request, ('Não conseguiste entrar, talvez tenha havido um problema na escrita?'))
+            messages.error(request, ('Não conseguiste entrar, talvez tenha havido um problema na escrita?'))
             return redirect('login')
             
     else:
@@ -54,7 +63,7 @@ def register_user(request):
             messages.success(request, ('Conta criada com sucesso, podes agora entrar!.'))
             return redirect('home')
         else:
-            messages.success(request, ('Alguma coisa aconteceu, mas tens de tentar novamente!'))
+            messages.error(request, ('Alguma coisa aconteceu, mas tens de tentar novamente!'))
             return redirect('register')
     else:
         return render(request, 'register.html', {'form':form})
