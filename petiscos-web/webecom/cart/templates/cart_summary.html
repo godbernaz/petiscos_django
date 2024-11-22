@@ -90,13 +90,13 @@ $(document).on('click', '.update-cart', function(e){
     e.preventDefault();
     // get the product id.
     var productid = $(this).data('index');
-    
+
     $.ajax({
         type: 'POST',
         url: '{% url 'cart_update' %}',
         data: {
             product_id: $(this).data('index'),
-            product_qty: $('#select' + productid + 'option:selected').text(),
+            product_qty: $('#select' + productid + ' option:selected').text(),
             csrfmiddlewaretoken: '{{ csrf_token }}',
             action: 'post'
         },
