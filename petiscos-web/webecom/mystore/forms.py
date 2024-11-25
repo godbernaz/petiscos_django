@@ -1,6 +1,34 @@
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPasswordForm
 from django import forms
+
+from django.contrib.auth.forms import SetPasswordForm
+
+class ChangePasswordForm(SetPasswordForm):
+
+    def __init__(self, *args, **kwargs):
+        super(ChangePasswordForm, self).__init__(*args, **kwargs)
+
+        self.fields['new_password1'].widget.attrs['class'] = 'form-control'
+        self.fields['new_password1'].widget.attrs['placeholder'] = 'Palavra-chave'
+        self.fields['new_password1'].label = ''
+        self.fields['new_password1'].help_text = (
+            '<ul class="form-text text-muted small">'
+            '<li>A tua palavra-passe não pode ser demasiado semelhante às tuas outras informações pessoais.</li>'
+            '<li>A tua palavra-passe deve conter pelo menos 8 caracteres.</li>'
+            '<li>A tua palavra-passe não pode ser uma palavra-passe habitualmente utilizada.</li>'
+            '<li>A tua palavra-passe não pode ser inteiramente numérica.</li>'
+            '</ul>'
+        )
+
+        self.fields['new_password2'].widget.attrs['class'] = 'form-control'
+        self.fields['new_password2'].widget.attrs['placeholder'] = 'Confirmar a tua palavra-chave.'
+        self.fields['new_password2'].label = ''
+        self.fields['new_password2'].help_text = (
+            '<span class="form-text text-muted">'
+            '<small>Introduza a mesma palavra-passe novamente.</small>'
+            '</span>'
+        )
 
 class UpdateUserForm(UserChangeForm):
 	email = forms.EmailField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Email Address'}))
@@ -10,7 +38,7 @@ class UpdateUserForm(UserChangeForm):
  
 	class Meta:
 		model = User
-		fields = ('username', 'first_name', 'last_name', 'email',)
+		fields = ('username', 'first_name', 'last_name', 'email')
 
 	def __init__(self, *args, **kwargs):
 		super(UpdateUserForm, self).__init__(*args, **kwargs)
