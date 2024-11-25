@@ -4,13 +4,30 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .forms import SignUpForm
+from .forms import SignUpForm, UpdateUserForm
 from django import forms
+
+def update_user(request):
+    if request.user.is_authenticated:
+        current_user = User.objects.get(id=request.user.id)
+        user_form = UpdateUserForm(request.POST or None, instance=current_user)
+        
+        if user_form.is_valid():
+            user_form.save()
+            
+            login(request, current_user)
+            messages.success(request, 'O teu perfil foi atualizado com sucesso!.')
+            return redirect('home')
+        
+        return render(request, 'update_user.html', {'user_form':user_form}) 
+    
+    else:
+        messages.error(request, 'Tens de ter uma conta para poderes atualizar o teu perfil')
+        return redirect('home')
 
 def category_summary(request):
     categories = Categories.objects.all()
     return render(request, 'category_summary.html', {'categories':categories})
-    
     
 def category(request, cn):
     try:
@@ -51,7 +68,7 @@ def login_user(request):
 
 def logout_user(request):
     logout(request)
-    messages.success(request, ('Saiste da tua conta!, és sempre bem-vindo novamente!.'))
+    messages.success(request, ('Saiste da tua conta com sucesso!'))
     return redirect('home')
 
 def register_user(request):
