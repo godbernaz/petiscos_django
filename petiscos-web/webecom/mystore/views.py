@@ -1,12 +1,49 @@
 from django.shortcuts import render, redirect
-from .models import Products, Categories
+from .models import Products, Categories, Profile
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm
+from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UpdateProfileForm
 from django import forms
+from django.db.models import Q
+import json
+from cart.cart import Cart
 
+def search(request):
+    if request.method == "POST":
+        searched = request.POST['searched']
+        
+        # Query the products in DataBase.
+        searched = Products.objects.filter(Q(name__icontains=searched) | Q(description__icontains=searched))
+        
+        if not searched:
+            messages.error(request, 'Desculpa, o produto que procuras não está disponivel!!.')
+            return render(request, 'search.html', {})    
+        else:
+            return render(request, 'search.html', {'searched':searched})
+    else:
+        return render(request, 'search.html', {}) 
+
+
+def update_profile(request):
+    if request.user.is_authenticated:
+        current_user = Profile.objects.get(user__id=request.user.id)
+        form = UpdateProfileForm(request.POST or None, instance=current_user)
+        
+        if form.is_valid(): 
+            form.save()
+            
+            messages.success(request, 'A informação do teu perfil foi atualizado com sucesso!.')
+            return redirect('home')
+        
+        return render(request, 'update_profile.html', {'form':form}) 
+    
+    else:
+        messages.error(request, 'Tens de ter uma conta para poderes atualizar o teu perfil')
+        return redirect('home')
+    
+    
 # Change the user password View.
 def update_password(request):
     if request.user.is_authenticated:
@@ -90,6 +127,21 @@ def login_user(request):
         
         if user is not None:
             login(request, user)
+            
+            # Get the user profile.
+            current_user = Profile.objects.get(user__id=request.user.id)
+            # Get the old_cart string.
+            saved_cart = current_user.old_cart
+            # Convert database string to python dictionary.
+            if saved_cart:
+                # Convert to dictionary using JSON.
+                converted_cart = json.loads(saved_cart)
+                # Add the cart dictionary to the user session.
+                cart = Cart(request)
+                # Loop through the cart to append the items from our database.
+                for key, value in converted_cart.items():
+                    cart.db_add(product=key, quantity= value)
+            
             messages.success(request, ('Bem vindo, você entrou na sua conta!.'))
             return redirect('home')
         else: 
@@ -117,7 +169,7 @@ def register_user(request):
             user = authenticate(username=username, password=password)
             login(request, user)
             messages.success(request, ('Conta criada com sucesso, podes agora entrar!.'))
-            return redirect('home')
+            return redirect('update_profile')
         else:
             messages.error(request, ('Alguma coisa aconteceu, mas tens de tentar novamente!'))
             return redirect('register')

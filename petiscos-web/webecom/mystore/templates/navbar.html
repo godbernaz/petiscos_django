@@ -8,7 +8,9 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
                 <li class="nav-item"><a class="nav-link active" aria-current="page" href="{% url 'home' %}">Página Principal</a></li>
+                <li class="nav-item"><a class="nav-link active" aria-current="page" href="{% url 'search' %}">Procurar</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'about' %}">Sobre</a></li>
+
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Loja</a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
@@ -23,8 +25,15 @@
                         <li><a class="dropdown-item" href="{% url 'category' 'Sobremesas' %}">Sobremesas</a></li>
                     </ul>
                 </li>
+
                 {% if user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'update_user' %}">Perfil</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Perfil</a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="{% url 'update_user' %}">Atualizar Perfil</a></li>
+                        <li><a class="dropdown-item" href="{% url 'update_profile' %}">Atualizar Informação</a></li>
+                    </ul>
+                </li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Sair</a></li>
                 {% else %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Entrar</a></li>

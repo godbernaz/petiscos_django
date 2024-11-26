@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+
+        <header class="bg-dark py-5">
+            <div class="container px-4 px-lg-5 my-5">
+                <div class="text-center text-white">
+                    <h1 class="display-4 fw-bolder">Atualiza as tuas informações</h1>
+                    <p class="lead fw-normal text-white-50 mb-0">Atualiza as informações do teu perfil</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-6 offset-md-3">
+                        <br/><br/><br/><br/><br/>
+                        <form method="POST" action="{% url 'update_profile' %}">
+                            {% csrf_token %}
+
+                            {{ form.as_p }}
+                            <br/>
+                            <button type="submit" class="btn btn-secondary">Atualizar Perfil</button>
+                            <br/><br/>
+                          </form>
+                          <br/><br/><br/><br/><br/><br/><br/><br/><br/>
+                    </div>
+            </div>
+        </div>
+
+
+{% endblock %}
