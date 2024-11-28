@@ -77,7 +77,10 @@
             </div>
 
             {% endfor %}
+            <div align="right">
             <h3>Preço Total: {{ totals }}€</h3>
+            <a href="{% url 'checkout' %}" class="btn btn-success">Finalizar Compra</a>
+            </div>
             <br/><br/>
             {% else %}
             <center>Não existe nada adicionado ao teu carrinho!, toca a ir procurar os melhores produtos da lininha.</center>
