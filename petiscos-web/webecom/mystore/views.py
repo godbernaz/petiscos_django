@@ -5,6 +5,10 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .forms import SignUpForm, UpdateUserForm, ChangePasswordForm, UpdateProfileForm
+
+from payment.forms import ShippingForm
+from payment.models import ShippingAddress
+
 from django import forms
 from django.db.models import Q
 import json
@@ -28,19 +32,31 @@ def search(request):
 
 def update_profile(request):
     if request.user.is_authenticated:
+        # Current User.
         current_user = Profile.objects.get(user__id=request.user.id)
-        form = UpdateProfileForm(request.POST or None, instance=current_user)
         
-        if form.is_valid(): 
+        try:
+            # Get Current User's Shipping Form.
+            shipping_user = ShippingAddress.objects.get(user__id=request.user.id)
+        except ShippingAddress.DoesNotExist:
+            # Se o usuário não tiver um endereço de envio, crie um novo.
+            shipping_user = ShippingAddress(user=request.user)
+
+        # Get User Original Form.
+        form = UpdateProfileForm(request.POST or None, instance=current_user)
+        shipping_form = ShippingForm(request.POST or None, instance=shipping_user)
+        
+        if form.is_valid() or shipping_form.is_valid():
             form.save()
+            shipping_form.save()
             
-            messages.success(request, 'A informação do teu perfil foi atualizado com sucesso!.')
+            messages.success(request, 'A informação do teu perfil foi atualizada com sucesso!')
             return redirect('home')
         
-        return render(request, 'update_profile.html', {'form':form}) 
+        return render(request, 'update_profile.html', {'form': form, 'shipping_form': shipping_form})
     
     else:
-        messages.error(request, 'Tens de ter uma conta para poderes atualizar o teu perfil')
+        messages.error(request, 'Tens de ter uma conta para poderes atualizar o teu perfil.')
         return redirect('home')
     
     
