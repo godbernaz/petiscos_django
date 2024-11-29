@@ -51,7 +51,10 @@ def update_profile(request):
             messages.success(request, 'A informação do teu perfil foi atualizada com sucesso!')
             return redirect('home')
         
-        return render(request, 'update_profile.html', {'form': form, 'shipping_form': shipping_form})
+        return render(request, 'update_profile.html', {
+            'form': form, 
+            'shipping_form': shipping_form
+        })
     
     else:
         messages.error(request, 'Tens de ter uma conta para poderes atualizar o teu perfil.')
@@ -79,7 +82,6 @@ def update_password(request):
         else:
             form = ChangePasswordForm(current_user)
             return render(request, 'update_password.html', {'form':form}) 
-    
     else:
         messages.error(request, 'Tens de ter uma conta para poderes atualizar o teu perfil.')
         return redirect('home')
@@ -113,7 +115,10 @@ def category(request, cn):
     try:
         category = Categories.objects.get(name=cn)
         products = Products.objects.filter(category=category)
-        return render(request, 'category.html', {'products': products, 'category': category})
+        return render(request, 'category.html', {
+            'products': products, 
+            'category': category
+        })
     except Categories.DoesNotExist:
         messages.error(request, 'Desculpa, neste momento não há produtos desta categoria.')
         return redirect('home')
