@@ -6,6 +6,73 @@ from payment.models import ShippingAddress, Order, OrderItem
 from django.contrib.auth.models import User
 from mystore.models import Products, Profile
 	
+def orders(request, pk):
+    
+    if request.user.is_authenticated and request.user.is_superuser:
+        # Get the order.
+        order = Order.objects.get(id=pk)
+        # Get the order items.
+        items = OrderItem.objects.filter(order=pk)
+        
+        if request.method == "POST":
+            # Get the order status.
+            status = request.POST['shipping_status']
+            
+			# Logic to change the order status.
+            if status == "True":  
+                order.shipped = True
+            else:
+                order.shipped = False
+            
+            order.save()  # Salva o objeto após a modificação
+            messages.success(request, "O estado do pedido foi alterado!")
+            return redirect('home')
+
+        return render(request, 'payment/orders.html', {"order": order, "items": items})
+        
+    else:    
+        messages.success(request, "Acesso Negado!")
+        return redirect('home')
+ 
+def not_shipped_dash(request):
+    
+    if request.user.is_authenticated and request.user.is_superuser:
+        orders = Order.objects.filter(shipped=False)
+        
+        if request.method == "POST":
+            
+            status = request.POST['shipping_status']
+            num = request.POST['num']
+            order = Order.objects.filter(id=num)
+            order.update(shipped=True)
+            messages.success(request, "O estado do pedido foi alterado!")
+            return redirect('not_shipped_dash')
+        
+        return render(request, "payment/not_shipped_dash.html", {"orders": orders})
+    else:
+        messages.success(request, "Acesso Negado!")
+        return redirect('home')
+
+def shipped_dash(request):
+    
+    if request.user.is_authenticated and request.user.is_superuser:
+        orders = Order.objects.filter(shipped=True)
+        
+        if request.method == "POST":
+            
+            status = request.POST['shipping_status']
+            num = request.POST['num']
+            order = Order.objects.filter(id=num)
+            order.update(shipped=False)
+            
+            messages.success(request, "O estado do pedido foi alterado!")
+            return redirect('shipped_dash')  
+        
+        return render(request, "payment/shipped_dash.html", {"orders": orders})
+    else:
+        messages.success(request, "Acesso Negado!")
+        return redirect('home')
+ 
 def process_order(request):
 	if request.POST:
 		# Get the cart
@@ -143,23 +210,44 @@ def billing_info(request):
 
 
 def checkout(request):
-	# Get the cart
-	cart = Cart(request)
-	cart_products = cart.get_prod
-	quantities = cart.get_quants
-	totals = cart.cart_total()
+    # Get the cart
+    cart = Cart(request)
+    cart_products = cart.get_prod
+    quantities = cart.get_quants
+    totals = cart.cart_total()
 
-	if request.user.is_authenticated:
-		# Checkout as logged in user
-		# Shipping User
-		shipping_user = ShippingAddress.objects.get(user__id=request.user.id)
-		# Shipping Form
-		shipping_form = ShippingForm(request.POST or None, instance=shipping_user)
-		return render(request, "payment/checkout.html", {"cart_products":cart_products, "quantities":quantities, "totals":totals, "shipping_form":shipping_form })
-	else:
-		# Checkout as guest
-		shipping_form = ShippingForm(request.POST or None)
-		return render(request, "payment/checkout.html", {"cart_products":cart_products, "quantities":quantities, "totals":totals, "shipping_form":shipping_form})
+    if request.user.is_authenticated:
+        # Try to get the shipping address or create a new one
+        shipping_user, created = ShippingAddress.objects.get_or_create(user=request.user)
+
+        # Shipping Form
+        shipping_form = ShippingForm(request.POST or None, instance=shipping_user)
+
+        if request.method == 'POST' and shipping_form.is_valid():
+            shipping_form.save()
+            messages.success(request, "Endereço de envio atualizado com sucesso!")
+            return redirect('checkout')
+
+        return render(request, "payment/checkout.html", {
+            "cart_products": cart_products,
+            "quantities": quantities,
+            "totals": totals,
+            "shipping_form": shipping_form
+        })
+    else:
+        # Checkout as guest
+        shipping_form = ShippingForm(request.POST or None)
+        if request.method == 'POST' and shipping_form.is_valid():
+            # Lidar com envio de convidados, se necessário
+            messages.success(request, "Endereço de envio para convidado adicionado!")
+            return redirect('checkout')
+
+        return render(request, "payment/checkout.html", {
+            "cart_products": cart_products,
+            "quantities": quantities,
+            "totals": totals,
+            "shipping_form": shipping_form
+        })
 
 def payment_success(request):
 	

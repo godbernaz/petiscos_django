@@ -27,6 +27,15 @@
                 </li>
 
                 {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Pedidos</a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="{% url 'shipped_dash' %}">Pedidos Finalizados</a></li>
+                        <li><a class="dropdown-item" href="{% url 'not_shipped_dash' %}">Pedidos Inacabados</a></li>
+                    </ul>
+                </li>
+                {% endif %}
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Perfil</a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
@@ -34,6 +43,7 @@
                         <li><a class="dropdown-item" href="{% url 'update_profile' %}">Atualizar Informação</a></li>
                     </ul>
                 </li>
+
                 <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Sair</a></li>
                 {% else %}
                 <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Entrar</a></li>

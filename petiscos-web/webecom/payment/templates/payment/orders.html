@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+
+        <div class="container">
+            <div class="row">
+                <center>
+                    <div class="col-8">
+                        <br/><br/>
+                        <div class="card">
+                            <div class="card-header">
+                            Pedido {{ order.id }} - {{ order.amount_paid }}€
+                            </div>
+                                <div class="card-body">
+                                    {% if order.date_shipped %}
+                                        Data do Envio: {{ order.date_shipped }}<br/>
+                                    {% else %}
+                                        Data do Pedido: {{ order.date_ordered }}<br/>
+                                    {% endif %}
+                                    <br/>
+                                    Nome: {{ order.full_name }}<br/> 
+                                    Telemóvel: {{ order.phone }}<br/>
+                                    Endereço do Envio:<pre>{{ order.shipping_address }}</pre><br/>
+                                    {% for item in items %}
+                                        {{ item.product }} - {{ item.quantity }} - {{ item.price }}€<br/>
+                                    {% endfor %}
+                                    <br/>
+                                    {% if not order.shipped %}
+                                    <form method="POST">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="shipping_status" value="True">
+                                        <button type="submit" class="btn btn-success">Finalizar Pedido</button>
+                                    </form>
+
+                                    {% else %}
+                                    <form method="POST">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="shipping_status" value="False">
+                                        <button type="submit" class="btn btn-danger">Pedido Não Finalizado</button>
+                                    </form>
+
+                                    {% endif %}
+                            </div>
+                        </div>
+                        <br/>
+                    </div>
+                </center>
+            </div>
+        </div>
+
+{% endblock %}
