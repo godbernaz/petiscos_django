@@ -133,6 +133,11 @@ def home(request):
     products = Products.objects.all()
     return render(request, 'home.html', {'products':products}) 
 
+def testes(request):
+    # Search for 10 products at random for the first page.
+    products = Products.objects.all().order_by('?')[:8]
+    return render(request, 'testes.html', {'products': products})
+
 # About Us View.
 def about(request):
     return render(request, 'about.html', {})

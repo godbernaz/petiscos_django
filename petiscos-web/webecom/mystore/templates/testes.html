@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container px-4 px-lg-5 mt-5">
+        <div class="row gx-4 gx-lg-5 row-cols-3 row-cols-md-10 row-cols-xl-4 justify-content-center">
+
+            {% for product in products %}
+                <article class="custom-card">
+                    <div class="custom-card-int">
+                        <span class="custom-card__span">{{ product.category }}</span>
+                        <div class="custom-card-img">
+                            <!-- Aqui pode ir a imagem do produto -->
+                        </div>
+
+                        <div class="custom-card-data">
+                            <p class="custom-card-title">{{ product.name }}</p>
+                            <!-- Descrição do Produto -->
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+
+                            <!-- Preço do Produto -->
+                            {% if product.is_sale %}
+                                <strike>{{ product.price }}€</strike>
+                                {{ product.sale_price }}€
+                            {% else %}
+                                {{ product.price }}€
+                            {% endif %}
+
+                            <!-- Botões de Ação -->
+                            <button class="custom-card-btn">Saber Mais</button>
+                            <button class="custom-card-btn">Adicionar ao Carrinho</button>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
