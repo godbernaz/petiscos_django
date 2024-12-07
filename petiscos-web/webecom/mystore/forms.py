@@ -2,20 +2,21 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, SetPasswordForm
 from django import forms
 from .models import Profile
-
+from phonenumber_field.formfields import PhoneNumberField
 from django.contrib.auth.forms import SetPasswordForm
-
+from localflavor.pt.forms import PTZipCodeField, PTRegionSelect
+from localflavor.pt.pt_regions import REGION_CHOICES
 
 # Form to update the user information (This might be deleted or updated soon since I have two different pages for changing user information(UpdateUserForm)
 # UpdateProfileForm() form changes user information but it makes sense to me to have all in the same page in the future.
 class UpdateProfileForm(forms.ModelForm):
-    phone = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Telemóvel'}), required=False)
-    address1 = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Endereço 1'}), required=False)
-    address2 = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Nº Porta/Andar/Apartamento'}), required=False)
-    city = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Cidade'}), required=False)
-    zipcode = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Código Postal'}), required=False)
-    country = forms.CharField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'País'}), required=False)
-    
+    phone = PhoneNumberField(label="", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Telemóvel'}), required=False)
+    address1 = forms.CharField(label="", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Endereço 1'}), required=False)
+    address2 = forms.CharField(label="", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nº Porta/Andar/Apartamento'}), required=False)
+    city = forms.ChoiceField(label="", choices=REGION_CHOICES, widget=PTRegionSelect(attrs={'class': 'form-control', 'placeholder': 'Cidade'}), required=False)
+    zipcode = PTZipCodeField(label="", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código Postal'}), required=False)
+    country = forms.CharField(label="", widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'País'}), required=False)
+
     class Meta:
         model = Profile
         fields = ('phone', 'address1', 'address2', 'city', 'zipcode', 'country')

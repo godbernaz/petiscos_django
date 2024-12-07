@@ -130,17 +130,12 @@ def product(request,pk):
 
 # Home Page View.
 def home(request):
-    products = Products.objects.all()
+    products = Products.objects.all().order_by('?')[:8]
     return render(request, 'home.html', {'products':products}) 
 
 def t_about_product(request,pk):
     product = Products.objects.get(id=pk)
-    return render(request, 'product.html', {'product':product})
-
-def t_home(request):
-    # Search for 10 products at random for the first page.
-    products = Products.objects.all().order_by('?')[:8]
-    return render(request, 't_home.html', {'products': products})
+    return render(request, 't_about_product.html', {'product':product})
 
 # About Us View.
 def about(request):

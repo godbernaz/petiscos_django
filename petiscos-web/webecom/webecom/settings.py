@@ -29,6 +29,8 @@ INSTALLED_APPS = [
     'mystore',
     'cart',
     'payment',
+    'django_quill',
+    'phonenumber_field',
 ]
 
 MIDDLEWARE = [

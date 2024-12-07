@@ -33,7 +33,6 @@ def cart_add(request):
         cart_quantity = cart.__len__()
         
         response = JsonResponse({'qty': cart_quantity})
-        messages.success(request, ('O produto foi adicionado ao teu carrinho!.'))
         return response
 
 def cart_delete(request):

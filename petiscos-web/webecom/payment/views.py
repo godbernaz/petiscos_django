@@ -4,7 +4,7 @@ from cart.cart import Cart
 from payment.forms import ShippingForm, PaymentForm
 from payment.models import ShippingAddress, Order, OrderItem
 from django.contrib.auth.models import User
-from mystore.models import Products, Profile
+from mystore.models import Profile
 	
 def orders(request, pk):
     
@@ -74,97 +74,111 @@ def shipped_dash(request):
         return redirect('home')
  
 def process_order(request):
-	if request.POST:
-		# Get the cart
-		cart = Cart(request)
-		cart_products = cart.get_prod
-		quantities = cart.get_quants
-		totals = cart.cart_total()
+    if request.POST:
+        # Get the cart
+        cart = Cart(request)
+        cart_products = cart.get_prod
+        quantities = cart.get_quants
+        totals = cart.cart_total()
 
-		# Get Billing Info from the last page
-		payment_form = PaymentForm(request.POST or None)
-		# Get Shipping Session Data
-		my_shipping = request.session.get('my_shipping')
+        # Get Billing Info from the last page
+        payment_form = PaymentForm(request.POST or None)
+        # Get Shipping Session Data
+        my_shipping = request.session.get('my_shipping')
 
-		# Gather Order Info
-		full_name = my_shipping['shipping_full_name']
-		email = my_shipping['shipping_email']
-		phone = my_shipping['shipping_phone']
-		# Create Shipping Address from session info
-		shipping_address = f"{my_shipping['shipping_address1']}\n{my_shipping['shipping_address2']}\n{my_shipping['shipping_city']}\n{my_shipping['shipping_zipcode']}\n{my_shipping['shipping_country']}"
-		amount_paid = totals
+        # Gather Order Info
+        full_name = my_shipping['shipping_full_name']
+        email = my_shipping['shipping_email']
+        phone = my_shipping['shipping_phone']
+        # Create Shipping Address from session info
+        shipping_address = f"{my_shipping['shipping_address1']}\n{my_shipping['shipping_address2']}\n{my_shipping['shipping_city']}\n{my_shipping['shipping_zipcode']}\n{my_shipping['shipping_country']}"
+        amount_paid = totals
 
-		# Create an Order
-		if request.user.is_authenticated:
-			# Registered Users.
-			user = request.user
-			# Create Order
-			create_order = Order(user=user, full_name=full_name, email=email, phone=phone, shipping_address=shipping_address, amount_paid=amount_paid)
-			create_order.save()
+        # Create an Order
+        if request.user.is_authenticated:
+            # Registered Users.
+            user = request.user
+            # Create Order
+            create_order = Order(
+                user=user,
+                full_name=full_name,
+                email=email,
+                phone=phone,
+                address=shipping_address,  # Use 'address' instead of 'shipping_address'
+                amount_paid=amount_paid
+            )
+            create_order.save()
 
-			# Get the order ID
-			order_id = create_order.pk
-			
-			# Get product Info
-			for product in cart_products():
-				product_id = product.id
-				# Get the sale/non_sale price for each product.
-				if product.is_sale:
-					price = product.sale_price
-				else:
-					price = product.price
+            # Get the order ID
+            order_id = create_order.pk
 
-				# Get quantity
-				for key,value in quantities().items():
-					if int(key) == product.id:
-						create_order_item = OrderItem(order_id=order_id, product_id=product_id, user=user, quantity=value, price=price)
-						create_order_item.save()
+            # Get product Info
+            for product in cart_products():
+                product_id = product.id
+                # Get the sale/non_sale price for each product.
+                price = product.sale_price if product.is_sale else product.price
 
-			# Delete our cart
-			for key in list(request.session.keys()):
-				if key == "session_key":
-					# Delete the key
-					del request.session[key]
+                # Get quantity
+                for key, value in quantities().items():
+                    if int(key) == product.id:
+                        create_order_item = OrderItem(
+                            order_id=order_id,
+                            product_id=product_id,
+                            user=user,
+                            quantity=value,
+                            price=price
+                        )
+                        create_order_item.save()
 
-			# Delete Cart from Database (old_cart field)
-			current_user = Profile.objects.filter(user__id=request.user.id)
-			# Delete shopping cart in database (old_cart field)
-			current_user.update(old_cart="")
+            # Delete our cart
+            for key in list(request.session.keys()):
+                if key == "session_key":
+                    del request.session[key]
 
+            # Delete Cart from Database (old_cart field)
+            current_user = Profile.objects.filter(user__id=request.user.id)
+            current_user.update(old_cart="")
 
-			messages.success(request, "Pedido Confirmado!")
-			return redirect('home')
+            messages.success(request, "Pedido Confirmado!")
+            return redirect('home')
 
-		else:
-			# Unregistered Users.
-			create_order = Order(full_name=full_name, email=email, phone=phone, shipping_address=shipping_address, amount_paid=amount_paid)
-			create_order.save()
+        else:
+            # Unregistered Users.
+            create_order = Order(
+                full_name=full_name,
+                email=email,
+                phone=phone,
+                address=shipping_address,  # Use 'address' instead of 'shipping_address'
+                amount_paid=amount_paid
+            )
+            create_order.save()
 
-			order_id = create_order.pk
-			
-			for product in cart_products():
-				product_id = product.id
-    
-				if product.is_sale:
-					price = product.sale_price
-				else:
-					price = product.price
-     
-				for key,value in quantities().items():
-					if int(key) == product.id:
-						create_order_item = OrderItem(order_id=order_id, product_id=product_id, quantity=value, price=price)
-						create_order_item.save()
+            order_id = create_order.pk
 
-			for key in list(request.session.keys()):
-				if key == "session_key":
-					# Delete the key
-					del request.session[key]
+            for product in cart_products():
+                product_id = product.id
+                price = product.sale_price if product.is_sale else product.price
 
-			messages.success(request, "Pedido Confirmado!")
-			return redirect('home')
-	else:
-		messages.success(request, "Acesso Negado!")
-		return redirect('home')
+                for key, value in quantities().items():
+                    if int(key) == product.id:
+                        create_order_item = OrderItem(
+                            order_id=order_id,
+                            product_id=product_id,
+                            quantity=value,
+                            price=price
+                        )
+                        create_order_item.save()
+
+            for key in list(request.session.keys()):
+                if key == "session_key":
+                    del request.session[key]
+
+            messages.success(request, "Pedido Confirmado!")
+            return redirect('home')
+    else:
+        messages.success(request, "Acesso Negado!")
+        return redirect('home')
+
 
 def billing_info(request):
     if request.POST:
